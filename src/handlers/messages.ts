@@ -9,7 +9,25 @@ const handlerMessages = () => {
 
 		if (context.isHear) return
 
-		console.log(chalk.white(`[LOG] Message: "${context.text}"`))
+		const text = context.text?.toLowerCase().trim()
+		const payload = context.messagePayload
+
+		if (payload) {
+			if (payload.command === "translate") {
+				await context.send({ message: "Напишите название чая" })
+			}
+			if (payload.command === "dictionary") {
+				await context.send({ message: "Лютый словарик" })
+			}
+
+			return
+		}
+
+		if (text) {
+			await context.send({ message: "Пон" })
+		}
+
+		console.log(chalk.white(`[LOG] Message: "${text}"`))
 	})
 }
 

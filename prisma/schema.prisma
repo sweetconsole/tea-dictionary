@@ -1,0 +1,30 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String @unique
+  icon String
+  words Word[]
+
+
+  @@map("categories")
+}
+
+model Word {
+  id Int @id @default(autoincrement())
+  word String @unique
+  hieroglyph String
+  translate String
+  categoryId Int @map("category_id")
+  category Category @relation(fields: [categoryId], references: [id])
+
+  @@map("words")
+}

@@ -1,16 +1,7 @@
 import "dotenv/config"
 import chalk from "chalk"
 
-const requiredEnvVars = [
-	"BOT_TOKEN",
-	"FIREBASE_API_KAY",
-	"FIREBASE_AUTH_DOMAIN",
-	"FIREBASE_PROJECT_ID",
-	"FIREBASE_STORAGE_BUCKET",
-	"FIREBASE_MESSAGING_SENDER_ID",
-	"FIREBASE_APP_ID",
-	"FIREBASE_MEASUREMENT_ID"
-]
+const requiredEnvVars = ["BOT_TOKEN", "DATABASE_URL"]
 
 const missingVars: string[] = []
 
