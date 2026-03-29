@@ -1,6 +1,10 @@
 import chalk from "chalk"
 import { vk, hearManager } from "../index.js"
-import { getTeaByName, getWordByName } from "../api.service.js"
+import {
+	getHieroglyphBySymbol,
+	getHieroglyphByTranscription,
+	getTeaByName
+} from "../api.service.js"
 import {
 	capitalizeFirstLetter,
 	capitalizeFirstLetterArray
@@ -32,8 +36,16 @@ const handlerMessages = () => {
 			const tea = await getTeaByName(text)
 
 			if (tea) {
+				let translateHieroglyphs = ""
+
+				for (const hieroglyph of [...tea.hieroglyphs]) {
+					const data = await getHieroglyphBySymbol(hieroglyph)
+
+					translateHieroglyphs += `${hieroglyph} - ${!data ? "Не нашлось перевода" : `${data.translate}`}\n`
+				}
+
 				await context.send({
-					message: `${capitalizeFirstLetterArray(text.split(" "))}переводится как:\n${tea.translate} (${tea.hieroglyphs})`
+					message: `🍃 ${capitalizeFirstLetterArray(text.split(" "))} - ${tea.translate} (${tea.hieroglyphs})\n\nРазбор иероглифов:\n${translateHieroglyphs}`
 				})
 
 				return
@@ -44,7 +56,7 @@ const handlerMessages = () => {
 			let hieroglyphs = ""
 
 			for (const word of teaWords) {
-				const data = await getWordByName(word)
+				const data = await getHieroglyphByTranscription(word)
 
 				if (!data) return
 
