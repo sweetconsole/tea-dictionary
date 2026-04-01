@@ -1,7 +1,8 @@
-import { hearManager } from "../index.js"
+import type { HearManager } from "@vk-io/hear"
+import type { MessageContext } from "vk-io"
 import { menuKeyboard } from "../keyboards.js"
 
-const handlerCommands = () => {
+const handlerCommands = (hearManager: HearManager<MessageContext>) => {
 	hearManager.hear(/^(hello|привет|start|начать)$/i, async context => {
 		await context.send({
 			message:

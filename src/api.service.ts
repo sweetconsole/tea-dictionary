@@ -10,5 +10,5 @@ export const getHieroglyphBySymbol = (symbol: string) => {
 }
 
 export const getHieroglyphByTranscription = (transcription: string) => {
-	return prisma.hieroglyph.findFirst({ where: {transcription: transcription } })
+	return prisma.hieroglyph.findMany({ where: {transcription: transcription } })
 }

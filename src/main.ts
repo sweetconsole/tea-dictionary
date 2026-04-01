@@ -13,9 +13,9 @@ export const vk = new VK({
 
 export const hearManager = new HearManager<MessageContext>()
 
-handlerCommands()
+handlerCommands(hearManager)
 vk.updates.on("message_new", hearManager.middleware)
-handlerMessages()
+handlerMessages(hearManager, vk)
 
 vk.updates
 	.start()

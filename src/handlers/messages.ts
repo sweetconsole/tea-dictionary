@@ -1,22 +1,16 @@
 import chalk from "chalk"
-import { vk, hearManager } from "../index.js"
-import {
-	getHieroglyphBySymbol,
-	getHieroglyphByTranscription,
-	getTeaByName
-} from "../api.service.js"
-import {
-	capitalizeFirstLetter,
-	capitalizeFirstLetterArray
-} from "../utils/capitalizeFirstLetter.js"
+import { HearManager } from "@vk-io/hear"
+import { MessageContext, VK } from "vk-io"
+import { getHieroglyphBySymbol, getHieroglyphByTranscription, getTeaByName } from "../api.service.js"
+import { capitalizeFirstLetterArray } from "../utils/capitalizeFirstLetter.js"
 
-const handlerMessages = () => {
+const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
 	vk.updates.on("message_new", async (context, next) => {
 		await hearManager.middleware(context, next)
 
 		if (context.isHear) return
 
-		const text = context.text?.toLowerCase().trim()
+		const text = context.text?.toLowerCase().replace(/\s+/g, " ").trim()
 		const payload = context.messagePayload
 
 		if (payload) {
@@ -34,39 +28,70 @@ const handlerMessages = () => {
 
 		if (text) {
 			const tea = await getTeaByName(text)
+			const formattedName = capitalizeFirstLetterArray(text.split(" "))
 
 			if (tea) {
-				let translateHieroglyphs = ""
+				const hieroglyphPromises = [...tea.hieroglyphs].map(
+					async hieroglyph => {
+						const data = await getHieroglyphBySymbol(hieroglyph)
 
-				for (const hieroglyph of [...tea.hieroglyphs]) {
-					const data = await getHieroglyphBySymbol(hieroglyph)
+						return {
+							symbol: hieroglyph,
+							translate: data?.translate || "Не найдено",
+							transcription: data ? `  (${data.transcription})` : ""
+						}
+					}
+				)
 
-					translateHieroglyphs += `${hieroglyph} - ${!data ? "Не нашлось перевода" : `${data.translate}`}\n`
-				}
+				const hieroglyphResults = await Promise.all(hieroglyphPromises)
+
+				const translateHieroglyphs = hieroglyphResults
+					.map(
+						({ symbol, translate, transcription }) =>
+							`${symbol}${transcription} — ${translate}`
+					)
+					.join("\n")
 
 				await context.send({
-					message: `🍃 ${capitalizeFirstLetterArray(text.split(" "))} - ${tea.translate} (${tea.hieroglyphs})\n\nРазбор иероглифов:\n${translateHieroglyphs}`
+					message: [
+						`🍃 ${formattedName} — ${tea.translate} (${tea.hieroglyphs}) \n`,
+						"Разбор иероглифов:",
+						translateHieroglyphs || "Нет данных для разбора"
+					].join("\n")
 				})
 
 				return
 			}
 
-			const teaWords = text.split(" ")
-			let translate = ""
-			let hieroglyphs = ""
+			const words = text.split(" ")
 
-			for (const word of teaWords) {
-				const data = await getHieroglyphByTranscription(word)
+			const results = await Promise.all(
+				words.map(word => getHieroglyphByTranscription(word))
+			)
 
-				if (!data) return
+			const translations = words
+				.map((word, index) => {
+					const data = results[index]
 
-				translate += `${capitalizeFirstLetter(data.translate)} `
-				hieroglyphs += data.hieroglyph
-			}
+					if (!data || data.length === 0) {
+						return `${word} — не найдено`
+					}
 
-			await context.send({
-				message: `${capitalizeFirstLetterArray(teaWords)}переводится как:\n${translate} (${hieroglyphs})`
-			})
+					return data
+						.map(
+							item =>
+								`${item.hieroglyph}  (${item.transcription}) — ${item.translate}`
+						)
+						.join("\n")
+				})
+				.filter(Boolean)
+
+			const message =
+				translations.length > 0
+					? `Возможный перевод ${formattedName}\n\n ${translations.join("\n\n")}`
+					: `Не удалось найти перевод для ${formattedName}`
+
+			await context.send({ message })
 		}
 	})
 }
