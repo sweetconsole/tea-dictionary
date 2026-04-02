@@ -1,7 +1,8 @@
 import chalk from "chalk"
 import { HearManager } from "@vk-io/hear"
 import { MessageContext, VK } from "vk-io"
-import { getHieroglyphBySymbol, getHieroglyphByTranscription, getTeaByName } from "../api.service.js"
+import { getHieroglyphBySymbol, getHieroglyphByTranscription,
+	getHieroglyphsBySymbol, getHieroglyphsByTranscription, getTeaByName } from "../api.service.js"
 import { capitalizeFirstLetterArray } from "../utils/capitalizeFirstLetter.js"
 
 const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
@@ -31,19 +32,9 @@ const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
 			const formattedName = capitalizeFirstLetterArray(text.split(" "))
 
 			if (tea) {
-				const hieroglyphPromises = [...tea.hieroglyphs].map(
-					async hieroglyph => {
-						const data = await getHieroglyphBySymbol(hieroglyph)
-
-						return {
-							symbol: hieroglyph,
-							translate: data?.translate || "Не найдено",
-							transcription: data ? `  (${data.transcription})` : ""
-						}
-					}
-				)
-
-				const hieroglyphResults = await Promise.all(hieroglyphPromises)
+				const hieroglyphResults = await getHieroglyphsBySymbol([
+					...tea.hieroglyphs
+				])
 
 				const translateHieroglyphs = hieroglyphResults
 					.map(
@@ -64,10 +55,7 @@ const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
 			}
 
 			const words = text.split(" ")
-
-			const results = await Promise.all(
-				words.map(word => getHieroglyphByTranscription(word))
-			)
+			const results = await getHieroglyphsByTranscription(words)
 
 			const translations = words
 				.map((word, index) => {
