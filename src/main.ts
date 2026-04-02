@@ -20,13 +20,13 @@ handlerMessages(hearManager, vk)
 vk.updates
 	.start()
 	.then(() => {
-		console.log(chalk.green("[LOG] Bot is started!"))
+		console.log(chalk.green("[INFO] Bot is started!"))
 	})
 	.catch(error => {
-		console.error(chalk.red(`[ERR] Launch error: ${error}`))
+		console.error(chalk.red(`[ERROR] Launch error: ${error}`))
 	})
 
 process.once("SIGINT", () => {
-	console.log(chalk.yellow("\n[LOG] Bot is stopped!"))
+	console.log(chalk.yellow("\n[INFO] Bot is stopped!"))
 	process.exit(0)
 })

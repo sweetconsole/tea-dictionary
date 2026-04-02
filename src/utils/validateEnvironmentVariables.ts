@@ -15,12 +15,12 @@ export const validateEnvironmentVariables = () => {
 	if (missingVars.length > 0) {
 		console.log(
 			chalk.red(`
-				[ERR] Required environment variables are missing: \n 
+				[ERROR] Required environment variables are missing: \n 
 				${missingVars.map((variable, index) => `${index + 1}. ${variable}`).join("\n")}
 			`)
 		)
 		process.exit(1)
 	}
 
-	console.log(chalk.green("[LOG] All environment variables are loaded!"))
+	console.log(chalk.green("[INFO] All environment variables are loaded!"))
 }

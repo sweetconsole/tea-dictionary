@@ -1,16 +1,21 @@
-import { prisma } from "./lib/prisma.client.js"
+import { prisma } from "../lib/prisma.client.js"
+import { cachedQuery } from "./cache.service.js"
 
 export const getTeaByName = async (name: string) => {
-	return prisma.tea.findUnique({ where: { name: name } })
+	return await cachedQuery(`tea:${name}`, () => prisma.tea.findUnique({ where: { name: name } })
+	)
 }
 
 
 export const getHieroglyphBySymbol = async (symbol: string) => {
-	return prisma.hieroglyph.findUnique({ where: { hieroglyph: symbol } })
+	return await cachedQuery(`hieroglyph_symbol:${symbol}`, () => prisma.hieroglyph.findUnique({ where: { hieroglyph: symbol } })
+	)
 }
 
 export const getHieroglyphByTranscription = async (transcription: string) => {
-	return prisma.hieroglyph.findMany({ where: { transcription: transcription } })
+	return await cachedQuery(`hieroglyph_transcription:${transcription}`, () =>
+		prisma.hieroglyph.findMany({ where: { transcription: transcription } })
+	)
 }
 
 export const getHieroglyphsBySymbol = async (symbol: string[])  => {

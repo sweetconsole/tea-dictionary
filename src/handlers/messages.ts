@@ -2,7 +2,7 @@ import chalk from "chalk"
 import { HearManager } from "@vk-io/hear"
 import { MessageContext, VK } from "vk-io"
 import { getHieroglyphBySymbol, getHieroglyphByTranscription,
-	getHieroglyphsBySymbol, getHieroglyphsByTranscription, getTeaByName } from "../api.service.js"
+	getHieroglyphsBySymbol, getHieroglyphsByTranscription, getTeaByName } from "../services/api.service.js"
 import { capitalizeFirstLetterArray } from "../utils/capitalizeFirstLetter.js"
 
 const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
@@ -25,7 +25,7 @@ const handlerMessages = (hearManager: HearManager<MessageContext>, vk: VK) => {
 			return
 		}
 
-		console.log(chalk.white(`[LOG] Message: "${text}"`))
+		console.log(chalk.white(`[INFO] Message: "${text}"`))
 
 		if (text) {
 			const tea = await getTeaByName(text)
